@@ -13,3 +13,6 @@ class ResultObject:
         self.height = height
         self.class_id = class_id
         self.confidence = confidence
+
+    def to_str(self):
+        return 'x: ' + str(self.pos_x) + ', y: ' + str(self.pos_y)

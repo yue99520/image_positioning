@@ -87,8 +87,8 @@ class YoloAdapter:
             top = box[1]
             width = box[2]
             height = box[3]
-            pos_x = left + width * 2
-            pos_y = top + height * 2
+            pos_x = left + width
+            pos_y = top + height
             obj = ResultObject(pos_x, pos_y, width, height, class_ids[i], confidences[i])
             result.add_object(obj)
 

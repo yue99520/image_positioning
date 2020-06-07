@@ -1,0 +1,64 @@
+install jetpack 3.3
+https://www.youtube.com/watch?v=D7lkth34rgM&t=2s
+test nvcc
+
+install jetpack
+https://docs.nvidia.com/deeplearning/dgx/install-tf-jetsontx2/index.html
+
+install cv2
+https://www.youtube.com/watch?v=GlDjscSAtDY&t=217s
+
+test import...
+
+---------------------------------------------------------
+go to BBox-tool to labeling
+
+prepare you photos(JPEG) with	|	mogrify -format JPEG *.jpg
+
+make folder 001 002 depends on how many object that you want to recognize
+
+install pillow to open main.py
+https://askubuntu.com/questions/959504/how-do-i-install-pillow-in-ubuntu-16-04-lts
+
+--------------------------------------------
+site for training & prepare dataset
+https://medium.com/@manivannan_data/how-to-train-yolov3-to-detect-custom-objects-ccbcafeb13d2
+https://www.learnopencv.com/training-yolov3-deep-learning-based-custom-object-detector/
+--------------------------------------------
+
+make sure 1 class has different name of images
+
+--------
+look at the path
+---------
+python main.py
+python conv.py edit line 93 to make different number of the class
+
+
+copy your dataset from image to parkinglot folder(JPEGImages & labels) 
+
+python splitTrainAndTest.py /home/nvidia/Downloads/parkinglot/JPEGImages/
+
+make obj.data & obj.names
+
+download new darknet and new conf to training
+edit the "make file"
+
+going to darknet folder-cfg copy paste the yolov3.cfg or tiny-yolov3
+edit the inside of the cfg file
+
+make a swap file
+
+./darknet detector train /home/nvidia/Downloads/12car/object.data /home/nvidia/Downloads/darknet/cfg/test-yolov3-tiny.cfg darknet53.conv.74
+
+./darknet detector train cfg/cat-dog-obj.data cfg/cat-dog-yolov3-tiny.cfg darknet53.conv.74
+
+
+
+./darknet detector demo /home/nvidia/Downloads/12car/object.data /home/nvidia/Downloads/darknet/cfg/test-yolov3-tiny.cfg backup/test-yolov3-tiny_200000.weights "nvcamerasrc ! video/x-raw(memory:NVMM), width=(int)1280, height=(int)720,format=(string)I420, framerate=(fraction)30/1 ! nvvidconv flip-method=0 ! video/x-raw, format=(string)BGRx ! videoconvert ! video/x-raw, format=(string)BGR ! appsink"
+
+./darknet detect cfg/testobjectyolov3-tiny.cfg backup/testobjectyolov3-tiny_73000.weights IMG_0934.JPG
+
+./darknet detector train /home/nvidia/testobject/object.data cfg/testobjectyolov3-tiny.cfg backup/testobjectyolov3-tiny.backup
+
+./darknet detector demo /home/nvidia/object/object.data cfg/yolov3-tiny.cfg backup/yolov3-tiny_44000.weights "nvcamerasrc ! video/x-raw(memory:NVMM), width=(int)1280, height=(int)720,format=(string)I420, framerate=(fraction)30/1 ! nvvidconv flip-method=0 ! video/x-raw, format=(string)BGRx ! videoconvert ! video/x-raw, format=(string)BGR ! appsink"

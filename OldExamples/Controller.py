@@ -1,8 +1,8 @@
 import cv2 as cv
 from yolo_detector_tool.yolo_detection_adapter.YoloAdapter import YoloAdapter
 
-CONFIGURATION_PATH = '../cfg/yolov3.cfg'
-WEIGHT_PATH = '../data/yolov3.weights'
+CONFIGURATION_PATH = '../cfg/Yolov3.cfg'
+WEIGHT_PATH = '../data/Yolov3.weights'
 CLASS_FILE_PATH = '../data/coco.names'
 
 cap = cv.VideoCapture(0)

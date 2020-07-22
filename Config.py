@@ -1,12 +1,54 @@
 """
-    在此檔案中依照環境設定常數
+    攝影機
 """
 
-# Z軸攝影機焦距長度
+# XY軸俯視攝影機
+# port id
+CAM_XY_PORT = 0
+
+# Z軸平視攝影機
+# port id
+CAM_Z_PORT = 1
+
+# Z軸攝影機焦距
 # 單位：pixels
-FOCAL_LENGTH = 570
+CAM_Z_FOCAL_LENGTH = 570
+
+# Z軸攝影機拍攝方向
+# 若方向平行於Y軸則填'y'
+CAM_Z_DIRECTION = 'y'
 
 # Z軸攝影機與座標系統之固定距離
 # 單位：cm
 CAM_Z_FIXED_DISTANCE = 0
 
+"""
+    影像辨識
+"""
+
+# 信心閥值
+CONFIDENT_THRESHOLD = 0.7
+
+# 影像辨識座標ID
+COORD_ORIGIN_ID = None
+COORD_X_ID = None
+COORD_Y_ID = None
+
+"""
+    物件與比例尺
+"""
+
+# XY平面真實長度cm：虛擬長度pixel
+LENGTH_SCALE = None
+
+"""
+    機械手臂
+"""
+
+# 機械手臂原點於座標軸中位置
+# {x, y}
+ARM_POSITION = {'x': 0, 'y': 0}
+
+# 物品各自的目的地
+# ID: {x, y}
+DESTINATION = {0: {0, 0}}

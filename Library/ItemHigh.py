@@ -1,4 +1,4 @@
-from Config import FOCAL_LENGTH
+from Config import CAM_Z_FOCAL_LENGTH
 
 
 """
@@ -8,6 +8,6 @@ from Config import FOCAL_LENGTH
 """
 
 
-def calculate_item_high(distance, virtual_length):
-    item_high = float(distance) * float(virtual_length) / FOCAL_LENGTH
+def calculate_item_high(distance, virtual_height):
+    item_high = float(distance) * float(virtual_height) / CAM_Z_FOCAL_LENGTH
     return item_high

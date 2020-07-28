@@ -1,3 +1,12 @@
+import logging
+
+import cv2 as cv
+"""
+APP
+"""
+LOGGING_LEVEL = logging.DEBUG
+LOGGING_FORMAT = '%(asctime)s | %(levelname)10s | %(filename)10s | %(message)s'
+
 """
     攝影機
 """
@@ -26,13 +35,19 @@ CAM_Z_FIXED_DISTANCE = 0
     影像辨識
 """
 
+
 # 信心閥值
 CONFIDENT_THRESHOLD = 0.7
 
 # 影像辨識座標ID
-COORD_ORIGIN_ID = None
-COORD_X_ID = None
-COORD_Y_ID = None
+COORD_ORIGIN_ID = "origin"
+COORD_X_ID = "x_axis"
+COORD_Y_ID = "y_axis"
+
+# PATH
+CFG_PATH = "./cfg/yolov3.cfg"
+WEIGHTS_PATH = "./weights/yolov3.weights"
+DATA_PATH = "./cfg/coco.data"
 
 """
     物件與比例尺
@@ -50,5 +65,5 @@ LENGTH_SCALE = None
 ARM_POSITION = {'x': 0, 'y': 0}
 
 # 物品各自的目的地
-# ID: {x, y}
+# {id: {x, y}, ...}
 DESTINATION = {0: {0, 0}}

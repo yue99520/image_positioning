@@ -56,6 +56,9 @@ DATA_PATH = "./cfg/coco.data"
 # XY平面真實長度cm：虛擬長度pixel
 LENGTH_SCALE = None
 
+# XY平面使用的單位比例尺
+CM_PER_UNIT = 1
+
 """
     機械手臂
 """

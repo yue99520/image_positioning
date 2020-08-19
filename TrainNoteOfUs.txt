@@ -1,3 +1,16 @@
+--------
+環境安裝：
+建議用CUDA9.0 + CUDNN7點多，CUDA再高會不支援一堆鬼問題。
+CUDNN建議使用：cudnn-9.0-linux-x64-v7.6.5.32
+問題解決方向：
+- 是否安裝driver？
+- 是否export cuda 跟什麼LD的 path？
+- nvidia-smi有沒有安裝正確？
+- cuda 跟 cudnn 的版本是否能支援？
+- 值得參考：https://zhuanlan.zhihu.com/p/35454312 裡面寫到要建立/etc/ld.so.conf.d/cuda.conf真的有用
+
+*若要將yolo連接python可以用yolo34py但是要記得將darknet底下的libdarknet.so複製到/usr/lib/底下
+-----------------------------------------------------------------------------------
 HOW TO MODIFY .CFG
 1. "batch" is free to change, it relates to productivity.
 2. "subdivision" maybe needs to lower than "batch"

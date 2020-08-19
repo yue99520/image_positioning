@@ -1,5 +1,6 @@
 import logging
 
+# pydarknet belongs to yolo34py, it will be detected error by ide all the time, ignore it.
 from pydarknet import Detector, Image
 from Config import CFG_PATH, WEIGHTS_PATH, DATA_PATH, COORD_ORIGIN_ID, COORD_X_ID, COORD_Y_ID
 from ImagePositioning import CONFIDENCE_THRESHOLD

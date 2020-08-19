@@ -45,17 +45,18 @@ image_xy = frame.copy()
 # 取得物品位置
 net = Darknet()
 coord, virtual_position = recognize_from_xy(net, image_xy)
-logging.debug('Item Detected: ' + virtual_position.id)
 
 if coord.x is None or coord.y is None or coord.origin is None:
     logging.warning('Can not detect coordinate - ' +
-                    'Origin: ' + (coord.origin is not None) +
-                    ', X axis: ' + (coord.x is not None) +
-                    ', Y axis: ' + (coord.y is not None))
+                    'Origin: ' + str(coord.origin is not None) +
+                    ', X axis: ' + str(coord.x is not None) +
+                    ', Y axis: ' + str(coord.y is not None))
     exit()
 elif virtual_position is None:
     logging.warning('Can not detect any items.(XY cam)')
     exit()
+
+logging.debug('Item Detected: ' + virtual_position.id)
 
 # 計算真實座標
 x, y = find_real_position(coord, virtual_position)

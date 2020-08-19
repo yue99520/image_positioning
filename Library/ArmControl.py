@@ -10,7 +10,9 @@ port = list_ports.comports()[0].device
 轉換座標
 return 手臂座標{x, y, z}
 """
-finx,finy,finz = 0
+
+
+finx, finy, finz = 0, 0, 0
 
 
 def convert_arm_coordinate(coord: Coordinate, x, y, z):

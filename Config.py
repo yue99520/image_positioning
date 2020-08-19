@@ -13,7 +13,7 @@ LOGGING_FORMAT = '%(asctime)s | %(levelname)10s | %(filename)10s | %(message)s'
 
 # XY軸俯視攝影機
 # port id
-CAM_XY_PORT = 0
+CAM_XY_PORT = 1
 
 # Z軸平視攝影機
 # port id
@@ -45,9 +45,9 @@ COORD_X_ID = "x_axis"
 COORD_Y_ID = "y_axis"
 
 # PATH
-CFG_PATH = "./cfg/yolov3.cfg"
-WEIGHTS_PATH = "./weights/yolov3.weights"
-DATA_PATH = "./cfg/coco.data"
+CFG_PATH = "../test_model/cfg/yolov3.cfg"
+WEIGHTS_PATH = "../test_model/weights/yolov3.weights"
+DATA_PATH = "../test_model/cfg/coco.data"
 
 """
     物件與比例尺

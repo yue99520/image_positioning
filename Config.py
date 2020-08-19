@@ -45,9 +45,9 @@ COORD_X_ID = "x_axis"
 COORD_Y_ID = "y_axis"
 
 # PATH
-CFG_PATH = "../test_model/cfg/yolov3.cfg"
-WEIGHTS_PATH = "../test_model/weights/yolov3.weights"
-DATA_PATH = "../test_model/cfg/coco.data"
+CFG_PATH = "./Yolov3TestModel/cfg/yolov3.cfg"
+WEIGHTS_PATH = "./Yolov3TestModel/weights/yolov3.weights"
+DATA_PATH = "./Yolov3TestModel/cfg/coco.data"
 
 """
     物件與比例尺

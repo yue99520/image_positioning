@@ -13,11 +13,11 @@ LOGGING_FORMAT = '%(asctime)s | %(levelname)10s | %(filename)10s | %(message)s'
 
 # XY軸俯視攝影機
 # port id
-CAM_XY_PORT = 1
+CAM_XY_PORT = 0
 
 # Z軸平視攝影機
 # port id
-CAM_Z_PORT = 1
+CAM_Z_PORT = 2
 
 # Z軸攝影機焦距
 # 單位：pixels

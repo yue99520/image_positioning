@@ -3,3 +3,6 @@
 /Pipfile.lock
 venv
 /Yolov3TestModel/weights/yolov3.weights
+/Yolov3TestModel/cfg/
+/Yolov3TestModel/data/
+/Yolov3TestModel/weights/

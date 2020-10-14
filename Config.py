@@ -45,10 +45,15 @@ COORD_X_ID = "x_axis"
 COORD_Y_ID = "y_axis"
 
 # PATH
-CFG_PATH = "./Yolov3TestModel/cfg/yolov3.cfg"
-WEIGHTS_PATH = "./Yolov3TestModel/weights/yolov3.weights"
-DATA_PATH = "./Yolov3TestModel/cfg/coco.data"
-
+# CFG_PATH = "./Yolov3TestModel/cfg/candybox.cfg"
+# WEIGHTS_PATH = "../darknet/backup/candybox_10000.weights"
+# DATA_PATH = "./Yolov3TestModel/data/candybox.data"
+# CFG_PATH = "./Yolov3TestModel/cfg/candybox.cfg"
+# WEIGHTS_PATH = "../darknet/backup/diamond_90000.weights"
+# DATA_PATH = "./Yolov3TestModel/data/obj.data"
+CFG_PATH = "./Yolov3TestModel/cfg/candybox.cfg"
+WEIGHTS_PATH = "../darknet/backup/circle_50000.weights"
+DATA_PATH = "./Yolov3TestModel/data/obj.data"
 """
     物件與比例尺
 """

@@ -17,7 +17,7 @@ CAM_XY_PORT = 0
 
 # Z軸平視攝影機
 # port id
-CAM_Z_PORT = 2
+CAM_Z_PORT = 5
 
 # Z軸攝影機焦距
 # 單位：pixels
@@ -44,16 +44,26 @@ COORD_ORIGIN_ID = "origin"
 COORD_X_ID = "x_axis"
 COORD_Y_ID = "y_axis"
 
-# PATH
-# CFG_PATH = "./Yolov3TestModel/cfg/candybox.cfg"
-# WEIGHTS_PATH = "../darknet/backup/candybox_10000.weights"
-# DATA_PATH = "./Yolov3TestModel/data/candybox.data"
-# CFG_PATH = "./Yolov3TestModel/cfg/candybox.cfg"
-# WEIGHTS_PATH = "../darknet/backup/diamond_90000.weights"
-# DATA_PATH = "./Yolov3TestModel/data/obj.data"
-CFG_PATH = "./Yolov3TestModel/cfg/candybox.cfg"
-WEIGHTS_PATH = "../darknet/backup/circle_50000.weights"
-DATA_PATH = "./Yolov3TestModel/data/obj.data"
+CFG_PATH = "../darknet/test/cfg/circle/circle.cfg"
+WEIGHTS_PATH = "../darknet/backup/circle/circle_10000.weights"
+DATA_PATH = "../darknet/test/cfg/circle/obj.data"
+
+CFG_COORDINATE_ORIGIN_PATH = "../darknet/test/cfg/diamond/diamond.cfg"
+DATA_COORDINATE_ORIGIN_PATH = "../darknet/test/cfg/diamond/obj.data"
+WEIGHTS_COORDINATE_ORIGIN_PATH = "../darknet/backup/diamond/diamond_10000.weights"
+
+CFG_COORDINATE_X_PATH = ""
+DATA_COORDINATE_X_PATH = ""
+WEIGHTS_COORDINATE_X_PATH = ""
+
+CFG_COORDINATE_Y_PATH = "../darknet/test/cfg/circle/circle.cfg"
+DATA_COORDINATE_Y_PATH = "../darknet/test/cfg/circle/obj.data"
+WEIGHTS_COORDINATE_Y_PATH = "../darknet/backup/circle/circle_10000.weights"
+
+CFG_OBJECT_PATH = "../darknet/test/cfg/candybox/yolov3-tiny.cfg"
+DATA_OBJECT_PATH = "../darknet/test/cfg/candybox/candybox.data"
+WEIGHTS_OBJECT_PATH = "../darknet/test/cfg/candybox/yolov3-tiny_final.weights"
+
 """
     物件與比例尺
 """
@@ -62,7 +72,8 @@ DATA_PATH = "./Yolov3TestModel/data/obj.data"
 LENGTH_SCALE = None
 
 # XY平面使用的單位比例尺
-CM_PER_UNIT = 1
+CM_PER_X_UNIT = 30
+CM_PER_Y_UNIT = 20
 
 """
     機械手臂

@@ -8,11 +8,11 @@ import cv2 as cv
 class VirtualPosition:
     def __init__(self):
         self.id = None  # id 是 .names 檔中的名稱而非該名稱的 index
-        self.x = None
-        self.y = None
-        self.width = None
-        self.height = None
-        self.confidence = None
+        self.x = 0
+        self.y = 0
+        self.width = 0
+        self.height = 0
+        self.confidence = 0
 
     # 方框加上文字，預設為紅色（0, 0, 255）
     def draw(self, image, color=(0, 0, 255)):

@@ -2,17 +2,17 @@ import logging
 
 # pydarknet belongs to yolo34py, it will be detected error by ide all the time, ignore it.
 from pydarknet import Detector, Image
-from Config import CFG_PATH, WEIGHTS_PATH, DATA_PATH, COORD_ORIGIN_ID, COORD_X_ID, COORD_Y_ID
+from Config import COORD_ORIGIN_ID, COORD_X_ID, COORD_Y_ID
 from ImagePositioning import CONFIDENCE_THRESHOLD
 from Library.Entity import VirtualPosition, Coordinate
 
 
-class Darknet:
-    def __init__(self):
+class DarknetProxy:
+    def __init__(self, cfg_path, weights_path, data_path):
         logging.debug('Connect Yolov3 darknet.')
-        self.net = Detector(bytes(CFG_PATH, encoding="utf-8"),
-                            bytes(WEIGHTS_PATH, encoding="utf-8"), 0,
-                            bytes(DATA_PATH, encoding="utf-8"))
+        self.net = Detector(bytes(cfg_path, encoding="utf-8"),
+                            bytes(weights_path, encoding="utf-8"), 0,
+                            bytes(data_path, encoding="utf-8"))
 
     def detect(self, image):
         results = self.net.detect(Image(image))
@@ -31,38 +31,38 @@ class Darknet:
         return virtual_positions
 
 
-"""
-取得影像中座標與物品的虛擬位置
-return coord: Coordinate, item: VirtualPosition
-"""
+# """
+# 取得影像中座標與物品的虛擬位置
+# return coord: Coordinate, item: VirtualPosition
+# """
+#
+#
+# def recognize_from_xy(net: DarknetProxy, image):
+#     virtual_positions = net.detect(image)
+#     coord = Coordinate()
+#     highest_conf = 0
+#     item = None
+#     for position in virtual_positions:
+#         pos_id = position.id
+#
+#         if pos_id is COORD_ORIGIN_ID:
+#             coord.origin = position
+#         elif pos_id is COORD_X_ID:
+#             coord.x = position
+#         elif pos_id is COORD_Y_ID:
+#             coord.y = position
+#         elif position.confidence > highest_conf:
+#             item = position
+#
+#     return coord, item
 
-
-def recognize_from_xy(net: Darknet, image):
-    virtual_positions = net.detect(image)
-    coord = Coordinate()
-    highest_conf = 0
-    item = None
-    for position in virtual_positions:
-        pos_id = position.id
-
-        if pos_id is COORD_ORIGIN_ID:
-            coord.origin = position
-        elif pos_id is COORD_X_ID:
-            coord.x = position
-        elif pos_id is COORD_Y_ID:
-            coord.y = position
-        elif position.confidence > highest_conf:
-            item = position
-
-    return coord, item
-
-
-def recognize_from_z(net: Darknet, image, find_id):
-    virtual_positions = net.detect(image)
-    highest_conf = 0
-    item = None
-    for position in virtual_positions:
-        pos_id = position.id
-        if position.confidence > highest_conf and pos_id is find_id:
-            item = position
-    return item
+#
+# def recognize_from_z(net: DarknetProxy, image, find_id):
+#     virtual_positions = net.detect(image)
+#     highest_conf = 0
+#     item = None
+#     for position in virtual_positions:
+#         pos_id = position.id
+#         if position.confidence > highest_conf and pos_id is find_id:
+#             item = position
+#     return item

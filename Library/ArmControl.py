@@ -7,19 +7,13 @@ from pydobot import *
 port = list_ports.comports()[0].device
 
 """
-轉換座標
+轉換座標 cm to arm coordinate
 return 手臂座標{x, y, z}
 """
 
 
-finx, finy, finz = 0, 0, 0
-
-
-def convert_arm_coordinate(coord: Coordinate, x, y, z):
-    global finx,finy,finz
-    finx = 300-(y*10)
-    finy = (x*10)-180
-    finz = (z-10)-60
+def convert_arm_coordinate(x, y, z):
+    pass
 
 
 """

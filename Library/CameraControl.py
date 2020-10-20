@@ -4,7 +4,7 @@ from cv2 import cv2 as cv
 from Config import CAM_XY_PORT, CAM_Z_PORT
 
 
-def access_camera_xy():
+def init_camera():
     logging.debug('Access camera XY, port = ' + str(CAM_XY_PORT))
     cam = cv.VideoCapture(CAM_XY_PORT)
     if cam.isOpened():

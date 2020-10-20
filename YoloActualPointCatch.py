@@ -1,5 +1,5 @@
 from Library.ImageRecognition import DarknetProxy
-from Library.CameraControl import access_camera_xy
+from Library.CameraControl import init_camera
 from Library.Entity import VirtualPosition
 import Config
 import cv2.cv2 as cv
@@ -51,7 +51,7 @@ def get_actual_point(cam, net):
 if __name__ == '__main__':
     net = DarknetProxy(Config.CFG_COORDINATE_ORIGIN_PATH, Config.WEIGHTS_COORDINATE_ORIGIN_PATH, Config.DATA_COORDINATE_ORIGIN_PATH)
 
-    cam = access_camera_xy()
+    cam = init_camera()
     count = 0
     ret, base_frame = cam.read()
 

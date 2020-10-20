@@ -3,7 +3,7 @@ import logging
 # pydarknet belongs to yolo34py, it will be detected error by ide all the time, ignore it.
 from pydarknet import Detector, Image
 from Config import COORD_ORIGIN_ID, COORD_X_ID, COORD_Y_ID
-from ImagePositioning import CONFIDENCE_THRESHOLD
+from Config import CONFIDENT_THRESHOLD
 from Library.Entity import VirtualPosition, Coordinate
 
 
@@ -18,7 +18,7 @@ class DarknetProxy:
         results = self.net.detect(Image(image))
         virtual_positions = []
         for cat, score, bounds in results:
-            if score >= CONFIDENCE_THRESHOLD:
+            if score >= CONFIDENT_THRESHOLD:
                 x, y, w, h = bounds
                 virtual_position = VirtualPosition()
                 virtual_position.id = cat.decode("utf-8") # 注意cat是物品在names檔案中的名稱，並非數字

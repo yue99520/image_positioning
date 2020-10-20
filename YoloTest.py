@@ -1,5 +1,5 @@
 from Library.ImageRecognition import DarknetProxy
-from Library.CameraControl import access_camera_xy
+from Library.CameraControl import init_camera
 from pydobot.dobot import Dobot
 from serial.tools import list_ports
 import Config
@@ -15,7 +15,7 @@ def test_yolo():
                        Config.WEIGHTS_COORDINATE_Y_PATH,
                        Config.DATA_COORDINATE_Y_PATH)
 
-    cam = access_camera_xy()
+    cam = init_camera()
     count = 0
     current_x = 0
     current_y = 0

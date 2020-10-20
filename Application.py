@@ -1,16 +1,14 @@
 import logging
 import Config
+import Library.View as View
 from pydobot.dobot import Dobot
 from cv2 import cv2 as cv
 from serial.tools import list_ports
-from Library.CameraControl import access_camera_xy, access_camera_z
+from Library.CameraControl import init_camera, access_camera_z
 from Library.Coordinate import find_real_position
 from Library.ItemHigh import calculate_item_high
 from Library.Entity import VirtualPosition, Coordinate
 from Library.ImageRecognition import DarknetProxy
-
-
-point_records = []
 
 
 class PointRecord:
@@ -20,6 +18,10 @@ class PointRecord:
 
     def add_count(self):
         self.count += 1
+
+
+def init_log():
+    logging.basicConfig(level=Config.LOGGING_LEVEL, format=Config.LOGGING_FORMAT)
 
 
 def init_obj_net():
@@ -43,73 +45,92 @@ def init_darknet():
     return coord_origin_net, coord_x_net, coord_y_net
 
 
-def detect_coordinate(cam_xy, net_o, net_x, net_y):
-    count = 1
-    while True:
-        logging.info('Start fetching coordinate...')
-        frame = cam_xy.read()
-        po = net_o.detect(frame)
-        px = net_x.detect(frame)
-        py = net_y.detect(frame)
-        if len(py) != 1 or len(px) != 1 or len(po) != 1:
-            logging.debug('Trying to fetch(' + str(count) + ') --- fail')
-            count += 1
-            if count >= 100:
-                logging.error('Cannot fetch coordinates.')
-                exit(-1)
-        else:
-            logging.info('Trying to fetch(' + str(count) + ') --- success')
-            return po[0], px[0], py[0]
+def init_dobot():
+    dobot = Dobot(list_ports.comports()[1].device)
+    # return dobot.home(), dobot
+    return None, dobot
 
 
-def detect_object(cam_xy, net_obj):
-    count = 1
-    while True:
-        logging.info('Start fetching objects...')
-        frame = cam_xy.read()
-        p = net_obj.detect(frame)
-        if len(p) >= 1:
-            logging.debug('Trying to fetch(' + str(count) + ') --- fail')
-            count += 1
-            if count >= 100:
-                logging.error('Cannot fetch any objects.')
-                exit(-1)
-        else:
-            logging.info('Trying to fetch(' + str(count) + ') --- success')
-            return p[0]
+# def detect_coordinate(cam_xy, net_o, net_x, net_y):
+#     count = 1
+#     while True:
+#         logging.info('Start fetching coordinate...')
+#         frame = cam_xy.read()
+#         po = net_o.detect(frame)
+#         px = net_x.detect(frame)
+#         py = net_y.detect(frame)
+#         if len(py) != 1 or len(px) != 1 or len(po) != 1:
+#             logging.debug('Trying to fetch(' + str(count) + ') --- fail')
+#             count += 1
+#             if count >= 100:
+#                 logging.error('Cannot fetch coordinates.')
+#                 exit(-1)
+#         else:
+#             logging.info('Trying to fetch(' + str(count) + ') --- success')
+#             return po[0], px[0], py[0]
 
 
-def get_best_point(virtual_positions):
-    best_p = VirtualPosition()
-    for p in virtual_positions:
-        if p.width >= best_p.width and p.height >= best_p.height:
-            best_p = p
-    return best_p
+# def detect_object(cam_xy, net_obj):
+#     count = 1
+#     while True:
+#         logging.info('Start fetching objects...')
+#         frame = cam_xy.read()
+#         p = net_obj.detect(frame)
+#         if len(p) >= 1:
+#             logging.debug('Trying to fetch(' + str(count) + ') --- fail')
+#             count += 1
+#             if count >= 100:
+#                 logging.error('Cannot fetch any objects.')
+#                 exit(-1)
+#         else:
+#             logging.info('Trying to fetch(' + str(count) + ') --- success')
+#             return p[0]
 
 
-def get_actual_point(cam, net):
+def object_detection(cam, net):
+    point_records = []
+    nothing_detected_notice = True
     while True:
         ret, frame = cam.read()
         virtual_positions = net.detect(frame)
 
-        if len(virtual_positions) is 0:
-            print("------------------------------------------")
+        if len(virtual_positions) is 0 and nothing_detected_notice is True:
+            logging.info("Nothing detected...")
+            nothing_detected_notice = False
             continue
 
-        best_p = get_best_point(virtual_positions)
+        best_p = get_single_frame_best_detection(virtual_positions)
 
-        new_record = True
-        for p in point_records:
-            if int(p.point.x) == int(best_p.x) and int(p.point.y) == int(best_p.y):
-                p.add_count()
-                if p.count >= 10:
-                    return p.point
-                new_record = False
-        if new_record is True:
-            point_records.append(PointRecord(best_p))
+        if best_p is not None:
+            is_best, point = get_best_detection_overall(point_records, best_p)
+            if is_best:
+                return point
 
 
-def correction(cam_xy):
+def get_best_detection_overall(records, best_p):
+    new_record = True
+    for p in records:
+        if int(p.point.x) == int(best_p.x) and int(p.point.y) == int(best_p.y):
+            p.add_count()
+            if p.count >= 10:
+                return True, p.point
+            new_record = False
+    if new_record is True:
+        records.append(PointRecord(best_p))
+    return False, None
+
+
+def get_single_frame_best_detection(virtual_positions):
+    best_p = VirtualPosition()
+    for p in virtual_positions:
+        if p.width >= best_p.width and p.height >= best_p.height:
+            best_p = p
+    if best_p.x <= 10 or best_p.y <= 10:
+        best_p = None
+    return best_p
+
+
+def environment_correction(cam_xy):
     y = (90, 375)
     x = (561, 30)
     o = (70, 46)
@@ -131,48 +152,72 @@ def correction(cam_xy):
         cv.line(frame, o, y, (255, 255, 0))
         cv.imshow('Correction', frame)
         if cv.waitKey(1) & 0xFF == ord('q'):
+            cv.destroyWindow('Correction')
             break
     return po, px, py
 
 
-def dobot_operate(dobot, x, y):
+def move_object(dobot, x, y):
     fix = 120
 
-    dobot.wait_for_cmd(dobot.move_to(x * 10, y * 10 + fix, 20))
-    dobot.wait_for_cmd(dobot.suck(True))
-    dobot.wait_for_cmd(dobot.move_to(x * 10, y * 10 + fix, -50))
-    dobot.wait_for_cmd(dobot.move_to(x * 10, y * 10 + fix, 20))
-    dobot.wait_for_cmd(dobot.move_to(120, -150, -20))
-    # dobot.wait_for_cmd(dobot.move_to(120, -150, -45))
-    dobot.wait_for_cmd(dobot.suck(False))
-    # dobot.wait_for_cmd(dobot.move_to(120, 0, 50))
+    dobot.move_to(x * 10, y * 10 + fix, 20)
+    dobot.suck(True)
+    dobot.move_to(x * 10, y * 10 + fix, -50)
+
+    dobot.move_to(x * 10, y * 10 + fix, 20)
+    dobot.move_to(120, -150, -20)
+    dobot.suck(False)
+    return dobot.move_to(120, 0, 0)
 
 
 if __name__ == '__main__':
-    logging.basicConfig(level=Config.LOGGING_LEVEL, format=Config.LOGGING_FORMAT)
-    logging.debug('App started.')
+    init_log()
+    logging.info('Application initializing...')
 
-    dobot = Dobot(list_ports.comports()[1].device)
-    # dobot.wait_for_cmd(dobot.home())
-
+    logging.info('Start dobot resetting')
+    cmd_reset, dobot = init_dobot()
     # net_o, net_x, net_y = init_darknet()
     net_obj = init_obj_net()
-    cam_xy = access_camera_xy()
+    camera = init_camera()
+
+    """
+    Environment correction
+    """
+    logging.info('Start environment correcting')
     coord = Coordinate()
-    coord.origin, coord.x, coord.y = correction(cam_xy)
-    # coord.origin, coord.x, coord.y = detect_coordinate(cam_xy, net_o, net_x, net_y)
-    obj = get_actual_point(cam_xy, net_obj)
+    coord.origin, coord.x, coord.y = environment_correction(camera)
 
-    # 計算真實座標
-    x, y = find_real_position(coord, obj)
-    real_xy = {'x': x, 'y': y}
-    logging.debug('[Real Position] x: ' + str(real_xy['x']) + ' cm, y: ' + str(real_xy['y']) + ' cm.')
+    """
+    Waiting for dobot initialize
+    """
+    logging.info('Wait for dobot reset to complete...')
+    # dobot.wait_for_cmd(cmd_reset)
+    logging.info('Dobot reset complete')
 
-    dobot_operate(dobot, real_xy['x'], real_xy['y'])
+    logging.info('-----Application start-----|')
+
+    # view = View.ViewThread("Application View", camera)
+    # view.start()
 
     while True:
-        ret, frame = cam_xy.read()
-        obj.draw(frame)
-        cv.imshow('Object', frame)
-        if cv.waitKey(1) & 0xFF == ord('q'):
-            break
+        # coord.origin, coord.x, coord.y = detect_coordinate(cam_xy, net_o, net_x, net_y)
+        obj = object_detection(camera, net_obj)
+
+        # 計算真實座標
+        x, y = find_real_position(coord, obj)
+        real_xy = {'x': x, 'y': y}
+        logging.debug('Real Position --- [x: ' + str(round(real_xy['x'], 2)) + ' cm], [y: ' + str(round(real_xy['y'], 2)) + ' cm]')
+
+        View.view_items.clear()
+        View.view_items.append(View.Point(int(real_xy['x']), int(real_xy['y']), "Target Center"))
+        View.view_items.append(View.Rectangle(obj, ""))
+
+        cmd_moving = move_object(dobot, real_xy['x'], real_xy['y'])
+        dobot.wait_for_cmd(cmd_moving)
+
+        # while True:
+        #     ret, frame = camera.read()
+        #     obj.draw(frame)
+        #     cv.imshow('Object', frame)
+        #     if cv.waitKey(1) & 0xFF == ord('q'):
+        #         break

@@ -24,6 +24,8 @@ class VirtualPosition:
                      thickness=2)
         cv.putText(image, str(self.id), (int(self.x), int(self.y)), cv.FONT_HERSHEY_DUPLEX, 1, color)
 
+    def to_tuple(self):
+        return int(self.x), int(self.y)
 
 """
 代表座標系統於影像中的虛擬位置，座標系統為原點，其他物品會被轉為相對於原點的真實位置，而座標本身不會。

@@ -68,9 +68,6 @@ WEIGHTS_OBJECT_PATH = "../darknet/test/cfg/candybox/yolov3-tiny_final.weights"
     物件與比例尺
 """
 
-# XY平面真實長度cm：虛擬長度pixel
-LENGTH_SCALE = None
-
 # XY平面使用的單位比例尺
 CM_PER_X_UNIT = 20
 CM_PER_Y_UNIT = 20
@@ -79,17 +76,10 @@ CM_PER_Y_UNIT = 20
     機械手臂
 """
 
-# 機械手臂原點於座標軸中位置
-# {x, y}
-ARM_POSITION = {'x': 0, 'y': 0}
+DESTINATION = (120, -150, -20)
 
-# 物品各自的目的地
-# {id: {x, y}, ...}
-DESTINATION = {0: {0, 0}}
-
-# COORD_O = (70, 46)
-# COORD_X = (561, 30)
-# COORD_Y = (90, 375)
+ARM_HORIZON_FIX = 125
+ARM_VERTICAL_FIX = 0
 
 COORD_O = (300, 40)
 COORD_X = (628, 41)

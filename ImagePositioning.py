@@ -12,6 +12,9 @@ from Library.ItemHigh import calculate_item_high
 from Library.Entity import VirtualPosition, Coordinate
 from Library.ImageRecognition import DarknetProxy
 
+MANUAL_CORRECTION_MODE = 0
+AUTO_CORRECTION_MODE = 1
+
 
 class ImageLocator:
     class PointRecord:
@@ -22,22 +25,27 @@ class ImageLocator:
         def add_count(self):
             self.count += 1
 
-    def __init__(self, cam):
+    def __init__(self, cam, mode=MANUAL_CORRECTION_MODE):
         logging.debug('Initializing ImageLocator...')
         self._cam = cam
         self._darknet = DarknetProxy(Config.CFG_OBJECT_PATH,
                                      Config.WEIGHTS_OBJECT_PATH,
                                      Config.DATA_OBJECT_PATH)
-        logging.info('Environment correcting...')
         self._coord = Coordinate()
-        self._coord.origin, self._coord.x, self._coord.y = self._environment_correction(Config.COORD_O, Config.COORD_X, Config.COORD_Y)
+        if mode == MANUAL_CORRECTION_MODE:
+            logging.info('Environment correcting...')
+            self._coord.origin, self._coord.x, self._coord.y = self._manual_correction(Config.COORD_O,
+                                                                                       Config.COORD_X,
+                                                                                       Config.COORD_Y)
+        elif mode == AUTO_CORRECTION_MODE:
+            self._coord = self._auto_correction()
         logging.info('Correction done.')
         logging.debug('ImageLocator has been initialized.')
 
     def convert_real_position(self, obj):
         return find_real_position(self._coord, obj)
 
-    def _environment_correction(self, o, x, y):
+    def _manual_correction(self, o, x, y):
         po = VirtualPosition()
         px = VirtualPosition()
         py = VirtualPosition()
@@ -49,17 +57,72 @@ class ImageLocator:
         py.y = y[1]
         while True:
             ret, frame = self._cam.read()
-            cv.line(frame, o, x, (255, 255, 0), 1)
-            cv.line(frame, o, y, (255, 255, 0), 1)
-            # cv.circle(frame, x, 5, (0, 255, 255), 2)
-            # cv.circle(frame, y, 5, (0, 255, 255), 2)
-            # cv.circle(frame, o, 5, (0, 255, 255), 2)
-            # cv.circle(frame, (0, 100), 10, (0, 255, 255), 3)
-            cv.imshow('Correction', frame)
-            if cv.waitKey(1) & 0xFF == ord('q'):
-                cv.destroyWindow('Correction')
+            code = self._confirm_correction(frame, o, x, y)
+            if code == 1:
                 break
         return po, px, py
+
+    def _confirm_correction(self, frame, o, x, y):
+        if o is not None:
+            cv.circle(frame, o, 5, [0, 255, 255], 2)
+        if x is not None:
+            cv.circle(frame, x, 5, [0, 255, 255], 2)
+        if y is not None:
+            cv.circle(frame, y, 5, [0, 255, 255], 2)
+        if o is not None:
+            if x is not None:
+                cv.line(frame, o, x, (255, 255, 0), 1)
+            if y is not None:
+                cv.line(frame, o, y, (255, 255, 0), 1)
+        cv.imshow('Confirm Correction(press "q")', frame)
+        if cv.waitKey(1) & 0xFF == ord('q'):
+            cv.destroyWindow('Confirm Correction(press "q")')
+            return 1
+        return 0
+
+    def _auto_correction(self):
+        def cut_frame(frame, p):
+            return frame[int(p.y - p.height / 2 + 3): int(p.y + p.height / 2 - 3), int(p.x - p.width / 2 + 3): int(p.x + p.width / 2 - 3)]
+
+        def average_color(img):
+            return img.mean(axis=0).mean(axis=0)
+
+        def is_red(avg_color):
+            return avg_color[2] / avg_color[0] >= 1.5 and avg_color[2] / avg_color[1] >= 1.5
+
+        def is_grey(avg_color):
+            return 0.8 <= avg_color[0] / avg_color[1] <= 1.2 and 0.8 <= avg_color[1] / avg_color[2] <= 1.2
+
+        def is_blue(avg_color):
+            return avg_color[0] / avg_color[1] >= 1.5 and avg_color[0] / avg_color[2] >= 1.5
+
+        coord_net = DarknetProxy(Config.CFG_COORDINATE_ORIGIN_PATH,
+                                 Config.WEIGHTS_COORDINATE_ORIGIN_PATH,
+                                 Config.DATA_COORDINATE_ORIGIN_PATH)
+
+        while True:
+            coord = Coordinate()
+            ret, frame = self._cam.read()
+            o, x, y = None, None, None
+            try:
+                points = coord_net.detect(frame)
+                for point in points:
+                    cutting = cut_frame(frame, point)
+                    avg_color = average_color(cutting)
+                    if is_red(avg_color) and coord.x is None:
+                        coord.x = point
+                    elif is_blue(avg_color) and coord.y is None:
+                        coord.y = point
+                    elif is_grey(avg_color) and coord.origin is None:
+                        coord.origin = point
+                o = coord.origin.to_tuple()
+                x = coord.x.to_tuple()
+                y = coord.y.to_tuple()
+            except Exception:
+                pass
+            code = self._confirm_correction(frame, o, x, y)
+            if code == 1:
+                return coord
 
     def object_detection(self):
         point_records = []
@@ -92,6 +155,9 @@ class ImageLocator:
             records.append(self.PointRecord(best_p))
         return False, None
 
+    def get_coord(self) -> Coordinate:
+        return self._coord
+
     @staticmethod
     def _get_single_frame_best_detection(virtual_positions):
         best_p = VirtualPosition()
@@ -118,15 +184,13 @@ class DobotProxy:
             logging.debug('Resetting done.')
 
     def move_object(self, x, y, wait=True):
-        horizon = 125
-        straight = -27
 
-        self._dobot.move_to(x * 10 + straight, y * 10 + horizon, 20)
+        self._dobot.move_to(x * 10 + Config.ARM_VERTICAL_FIX, y * 10 + Config.ARM_HORIZON_FIX, 20)
         self._dobot.suck(True)
-        self._dobot.move_to(x * 10 + straight, y * 10 + horizon, -50)
+        self._dobot.move_to(x * 10 + Config.ARM_VERTICAL_FIX, y * 10 + Config.ARM_HORIZON_FIX, -50)
 
-        self._dobot.move_to(x * 10 + straight, y * 10 + horizon, 20)
-        self._dobot.move_to(120, -150, -20)
+        self._dobot.move_to(x * 10 + Config.ARM_VERTICAL_FIX, y * 10 + Config.ARM_HORIZON_FIX, 20)
+        self._dobot.move_to(Config.DESTINATION[0], Config.DESTINATION[1], Config.DESTINATION[2])
         self._dobot.suck(False)
         cmd_id = self._dobot.move_to(120, 0, 0)
         if wait:
@@ -134,7 +198,6 @@ class DobotProxy:
 
 
 class PositioningThread(threading.Thread):
-
     class Info:
         def __init__(self, obj, real_position):
             self.obj = obj
@@ -191,9 +254,9 @@ class CameraProxy:
 if __name__ == '__main__':
     logging.basicConfig(level=Config.LOGGING_LEVEL, format=Config.LOGGING_FORMAT)
 
-    logging.info('Application initializing...')
+    reset_dobot = input('Do you need to reset dobot[n]?(y/n):')
 
-    reset_dobot = input('Do you need to reset dobot(n)?[y/n]:')
+    logging.info('Application initializing...')
 
     reset_dobot = reset_dobot == "y"
 
@@ -203,7 +266,8 @@ if __name__ == '__main__':
     camera = init_camera()
     camera = CameraProxy(camera, cam_lock)
 
-    image_locator = ImageLocator(camera)
+    image_locator = ImageLocator(camera, AUTO_CORRECTION_MODE)
+    coord = image_locator.get_coord()
 
     dobot_proxy.wait_for_initialized()
 
@@ -211,16 +275,6 @@ if __name__ == '__main__':
 
     info_lock = threading.Lock()
     positioning = PositioningThread("Positioning Thread", image_locator, dobot_proxy, info_lock)
-    view = View.ViewPresenter(camera, positioning)
+    view = View.ViewPresenter(camera, coord, positioning)
     positioning.start()
     view.show()
-
-    # view = View.ViewThread("Application View", camera)
-    # view.start()
-
-    # while True:
-    #     ret, frame = camera.read()
-    #     obj.draw(frame)
-    #     cv.imshow('Object', frame)
-    #     if cv.waitKey(1) & 0xFF == ord('q'):
-    #         break

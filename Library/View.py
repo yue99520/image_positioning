@@ -1,6 +1,7 @@
 import threading
 import logging
 import Config
+from Library.Entity import Coordinate
 from ImagePositioning import PositioningThread
 from Library.Entity import VirtualPosition
 from cv2 import cv2 as cv
@@ -42,15 +43,15 @@ class Point(ViewItem):
 
 
 class ViewPresenter:
-    def __init__(self, camera, info_source: PositioningThread):
+    def __init__(self, camera, coord: Coordinate, info_source: PositioningThread):
         self._camera = camera
         self._info_source = info_source
         self._view_items = []
         self._exit = False
         self._window_name = 'Image Positioning'
-        self.x = Config.COORD_X
-        self.y = Config.COORD_Y
-        self.o = Config.COORD_O
+        self.x = coord.x
+        self.y = coord.y
+        self.o = coord.origin
 
     def show(self):
         logging.debug("Start view thread")
@@ -72,11 +73,11 @@ class ViewPresenter:
         logging.info("View stop")
 
     def draw_coordinate(self, frame):
-        cv.line(frame, self.o, self.x, (255, 255, 0), 3)
-        cv.line(frame, self.o, self.y, (255, 255, 0), 3)
-        cv.circle(frame, self.x, 5, (0, 255, 255), 2)
-        cv.circle(frame, self.y, 5, (0, 255, 255), 2)
-        cv.circle(frame, self.o, 5, (0, 255, 255), 2)
+        cv.line(frame, self.o.to_tuple(), self.x.to_tuple(), (255, 255, 0), 3)
+        cv.line(frame, self.o.to_tuple(), self.y.to_tuple(), (255, 255, 0), 3)
+        cv.circle(frame, self.x.to_tuple(), 5, (0, 255, 255), 2)
+        cv.circle(frame, self.y.to_tuple(), 5, (0, 255, 255), 2)
+        cv.circle(frame, self.o.to_tuple(), 5, (0, 255, 255), 2)
 
     def stop(self):
         self._exit = True

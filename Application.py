@@ -47,8 +47,8 @@ def init_darknet():
 
 def init_dobot():
     dobot = Dobot(list_ports.comports()[1].device)
-    # return dobot.home(), dobot
-    return None, dobot
+    return dobot.home(), dobot
+    # return None, dobot
 
 
 # def detect_coordinate(cam_xy, net_o, net_x, net_y):

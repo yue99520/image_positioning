@@ -2,6 +2,8 @@ import cv2 as cv
 
 """
 每一個影像辨識偵測到的物品單位
+this xy system is as same as numpy.
+x axis is bigger when right, y axis is bigger when low
 """
 
 

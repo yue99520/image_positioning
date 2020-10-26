@@ -1,11 +1,9 @@
 import threading
 import logging
+import Config
+from ImagePositioning import PositioningThread
 from Library.Entity import VirtualPosition
 from cv2 import cv2 as cv
-
-
-view_exit = False
-view_items = []
 
 
 class ViewItem:
@@ -22,12 +20,13 @@ class ViewItem:
 class Rectangle(ViewItem):
     def __init__(self, virtual_position: VirtualPosition, name):
         super().__init__(name)
-        self.pt1 = (virtual_position.x - virtual_position.height / 2, virtual_position.y - virtual_position.width / 2)
-        self.pt2 = (virtual_position.x + virtual_position.height / 2, virtual_position.y + virtual_position.width / 2)
+        self.pt1 = (int(virtual_position.x - virtual_position.width / 2), int(virtual_position.y - virtual_position.height / 2))
+        self.pt2 = (int(virtual_position.x + virtual_position.width / 2), int(virtual_position.y + virtual_position.height / 2))
 
     def draw(self, frame):
         cv.rectangle(frame, self.pt1, self.pt2, (0, 0, 255))
-        cv.addText(frame, self.name, self.pt2, cv.FONT_HERSHEY_DUPLEX, (0, 255, 255))
+        # cv.addText(frame, self.name, self.pt2, cv.FONT_HERSHEY_DUPLEX, color=(0, 255, 255))
+        cv.putText(frame, self.name, self.pt2, cv.FONT_HERSHEY_DUPLEX, 1, color=(0, 255, 255))
 
 
 class Point(ViewItem):
@@ -37,26 +36,47 @@ class Point(ViewItem):
         self.y = y
 
     def draw(self, frame):
-        cv.circle(frame, (x, y), 1, (0, 0, 255))
-        cv.addText(frame, self.name, (x + 5, y + 5), cv.FONT_HERSHEY_DUPLEX, (0, 255, 255))
+        cv.circle(frame, (int(self.x), int(self.y)), 1, (0, 0, 255))
+        # cv.addText(frame, self.name, (int(self.x + 5), int(self.y + 5)), cv.FONT_HERSHEY_DUPLEX, color=(0, 255, 255))
+        cv.putText(frame, self.name, (int(self.x + 5), int(self.y + 5)), cv.FONT_HERSHEY_DUPLEX, 1, color=(0, 255, 255))
 
 
-class ViewThread(threading.Thread):
-    def __init__(self, name, camera):
-        threading.Thread.__init__(self)
-        self.name = name
-        self.camera = camera
+class ViewPresenter:
+    def __init__(self, camera, info_source: PositioningThread):
+        self._camera = camera
+        self._info_source = info_source
+        self._view_items = []
+        self._exit = False
+        self._window_name = 'Image Positioning'
+        self.x = Config.COORD_X
+        self.y = Config.COORD_Y
+        self.o = Config.COORD_O
 
-    def run(self) -> None:
+    def show(self):
         logging.debug("Start view thread")
         while True:
-            ret, frame = self.camera.read()
+            ret, frame = self._camera.read()
+            info = self._info_source.get_info_copy()
 
-            for item in view_items:
-                if type(item) is ViewItem:
-                    item.draw(frame)
+            self.draw_coordinate(frame)
 
-            cv.imshow('Object', frame)
-            if view_exit is True:
-                logging.info("View stop")
+            if info is not None:
+                Point(int(info.obj.x), int(info.obj.y), "Target Center").draw(frame)
+                Rectangle(info.obj, "").draw(frame)
+
+            cv.imshow(self._window_name, frame)
+            cv.waitKey(1)
+            if self._exit is True:
+                cv.destroyWindow(self._window_name)
                 break
+        logging.info("View stop")
+
+    def draw_coordinate(self, frame):
+        cv.line(frame, self.o, self.x, (255, 255, 0), 3)
+        cv.line(frame, self.o, self.y, (255, 255, 0), 3)
+        cv.circle(frame, self.x, 5, (0, 255, 255), 2)
+        cv.circle(frame, self.y, 5, (0, 255, 255), 2)
+        cv.circle(frame, self.o, 5, (0, 255, 255), 2)
+
+    def stop(self):
+        self._exit = True

@@ -30,12 +30,18 @@ def test_yolo():
 
         for p in virtual_positions:
             p.draw(frame)
+            cutting = frame[int(p.y - p.height/2 + 3): int(p.y + p.height/2 - 3), int(p.x - p.width/2 + 3): int(p.x + p.width/2 - 3)]
+            avg_color = average_color(cutting)
+
+            x_right_corner_point = int(p.x+p.width/2)
+            y_right_corner_point = int(p.y+p.height/2)
+            cv.rectangle(frame, (x_right_corner_point-5, y_right_corner_point-5), (x_right_corner_point+5, y_right_corner_point+5), avg_color, -1)
             if current_x != p.x or current_y != p.y:
                 print(str(p.id) + ' x:' + str(p.x) + ' y:' + str(p.y))
                 current_x = p.x
                 current_y = p.y
-        cv.imshow('test', frame)
         # cv.resizeWindow('test', 512)
+        cv.imshow('test', frame)
         if cv.waitKey(1) & 0xFF == ord('q'):
             break
 
@@ -50,6 +56,10 @@ def test_arm():
     print("finish")
 
 
+def average_color(img):
+    return img.mean(axis=0).mean(axis=0)
+
+
 if __name__ == "__main__":
-    # test_yolo()
-    test_arm()
+    test_yolo()
+    # test_arm()

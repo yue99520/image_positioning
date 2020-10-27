@@ -8,7 +8,6 @@ from cv2 import cv2 as cv
 from serial.tools import list_ports
 from Library.CameraControl import init_camera, access_camera_z
 from Library.Coordinate import find_real_position
-from Library.ItemHigh import calculate_item_high
 from Library.Entity import VirtualPosition, Coordinate
 from Library.ImageRecognition import DarknetProxy
 
@@ -252,6 +251,17 @@ class CameraProxy:
         return ret, frame
 
 
+class ConveyorThread(threading.Thread):
+
+    def __init__(self, dobot: DobotProxy):
+        super().__init__()
+        self._dobot = dobot
+
+    def run(self) -> None:
+        while True:
+            pass
+
+
 if __name__ == '__main__':
     logging.basicConfig(level=Config.LOGGING_LEVEL, format=Config.LOGGING_FORMAT)
 
@@ -276,6 +286,10 @@ if __name__ == '__main__':
 
     info_lock = threading.Lock()
     positioning = PositioningThread("Positioning Thread", image_locator, dobot_proxy, info_lock)
+    conveyor = ConveyorThread(dobot_proxy)
+
     view = View.ViewPresenter(camera, coord, positioning)
+
+    conveyor.start()
     positioning.start()
     view.show()
